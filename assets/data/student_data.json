@@ -1,38 +1,4 @@
 {
-  "student": {
-    "nim": "2415051047",
-    "name": "Made Dwi Sulaksana"
-  },
-  "courses": [
-    {
-      "title": "Pemrograman Mobile",
-      "code": "TIKS123456",
-      "credits": 3,
-      "status": "Selesai"
-    },
-    {
-      "title": "Metodologi Pendidikan",
-      "code": "TIKS123457",
-      "credits": 3,
-      "status": "Berlangsung"
-    },
-    {
-      "title": "Manajemen dan Kepemimpinan",
-      "code": "TIKS123458",
-      "credits": 2,
-      "status": "Berlangsung"
-    },
-    {
-      "title": "Literasi Keuangan",
-      "code": "TIKS123459",
-      "credits": 2,
-      "status": "Belum"
-    },
-    {
-      "title": "Pembelajaran Mikro",
-      "code": "TIKS123460",
-      "credits": 3,
-      "status": "Selesai"
-    }
-  ]
+  "studentId": "2415051047",
+  "studentName": "Made Dwi Sulaksana"
 }
