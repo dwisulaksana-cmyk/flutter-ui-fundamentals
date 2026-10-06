@@ -3,11 +3,8 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
 
-const String studentName = 'Made Dwi Sulaksana';
-const String studentId = '2415051047';
-
 Future<Map<String, dynamic>> loadStudentData() async {
-  final String jsonString = await rootBundle.loadString(
+  final jsonString = await rootBundle.loadString(
     'assets/data/student_data.json',
   );
 
@@ -23,9 +20,9 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return const MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: const DashboardPage(),
+      home: DashboardPage(),
     );
   }
 }
@@ -38,40 +35,101 @@ class DashboardPage extends StatefulWidget {
 }
 
 class _DashboardPageState extends State<DashboardPage> {
+  late Future<Map<String, dynamic>> studentFuture;
+
   @override
   void initState() {
     super.initState();
-    loadStudentData().then((data) {
-      debugPrint('Data JSON berhasil dibaca:');
-      debugPrint(data.toString());
-    });
+
+    studentFuture = loadStudentData();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Tahap 12')),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const CircleAvatar(
-              radius: 50,
-              backgroundImage: AssetImage('assets/images/profile.jpg'),
-            ),
-            const SizedBox(height: 16),
-            const Text(studentId, style: TextStyle(fontSize: 18)),
-            const Text(
-              studentName,
-              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 20),
-            const Text(
-              'Data JSON sedang diuji...',
-              style: TextStyle(fontSize: 16),
-            ),
-          ],
-        ),
+      appBar: AppBar(title: const Text('Learning Dashboard')),
+      body: FutureBuilder<Map<String, dynamic>>(
+        future: studentFuture,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          if (snapshot.hasError) {
+            return Center(child: Text('Gagal memuat data: ${snapshot.error}'));
+          }
+
+          if (!snapshot.hasData) {
+            return const Center(child: Text('Data tidak tersedia'));
+          }
+
+          final data = snapshot.data!;
+
+          final student = data['student'] as Map<String, dynamic>;
+
+          final courses = data['courses'] as List<dynamic>;
+
+          return Column(
+            children: [
+              const SizedBox(height: 16),
+
+              const CircleAvatar(
+                radius: 45,
+                backgroundImage: AssetImage('assets/images/profile.jpg'),
+              ),
+
+              const SizedBox(height: 10),
+
+              ListTile(
+                title: Text(
+                  student['name'] as String,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                subtitle: Text(
+                  student['nim'] as String,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(fontSize: 18),
+                ),
+              ),
+
+              Text(
+                'Jumlah Mata Kuliah: ${courses.length}',
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+
+              const SizedBox(height: 10),
+
+              Expanded(
+                child: ListView.builder(
+                  padding: const EdgeInsets.all(12),
+                  itemCount: courses.length,
+                  itemBuilder: (context, index) {
+                    final course = courses[index] as Map<String, dynamic>;
+
+                    return Card(
+                      margin: const EdgeInsets.only(bottom: 8),
+                      child: ListTile(
+                        leading: const Icon(Icons.book),
+                        title: Text(course['title'] as String),
+                        subtitle: Text(
+                          '${course['code']} • ${course['credits']} SKS',
+                        ),
+                        trailing: Text(course['status'] as String),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
+          );
+        },
       ),
     );
   }
