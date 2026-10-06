@@ -15,103 +15,128 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       home: Scaffold(
-        appBar: AppBar(title: const Text('LayoutBuilder & Breakpoint')),
-        body: LayoutBuilder(
-          builder: (context, constraints) {
-            if (constraints.maxWidth < 600) {
-              return const CompactLayout();
-            } else if (constraints.maxWidth < 840) {
-              return const MediumLayout();
-            } else {
-              return const ExpandedLayout();
-            }
-          },
-        ),
+        appBar: AppBar(title: const Text('Tahap 4 - Layout')),
+        body: const Padding(padding: EdgeInsets.all(16), child: Tahap4()),
       ),
     );
   }
 }
 
-class CompactLayout extends StatelessWidget {
-  const CompactLayout({super.key});
+class Tahap4 extends StatelessWidget {
+  const Tahap4({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Center(
+    final skills = [
+      'Flutter',
+      'Dart',
+      'UI Design',
+      'Git',
+      'Firebase',
+      'Android',
+    ];
+
+    return SingleChildScrollView(
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(Icons.phone_android, size: 80),
-          const SizedBox(height: 20),
           const Text(
-            'Compact Layout',
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            studentName,
+            style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
           ),
-          const SizedBox(height: 10),
-          Text(studentName),
-          Text(studentId),
-          const SizedBox(height: 10),
-          const Text('Lebar layar < 600'),
-        ],
-      ),
-    );
-  }
-}
+          const Text(studentId),
 
-class MediumLayout extends StatelessWidget {
-  const MediumLayout({super.key});
+          const SizedBox(height: 24),
 
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Icon(Icons.tablet_android, size: 90),
-          const SizedBox(width: 30),
-          Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.start,
+          const Text(
+            'Expanded 2:1',
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          ),
+
+          const SizedBox(height: 10),
+
+          Row(
             children: [
-              const Text(
-                'Medium Layout',
-                style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold),
-              ),
-              Text(studentName),
-              Text(studentId),
-              const SizedBox(height: 10),
-              const Text('Lebar layar 600–839'),
+              Expanded(flex: 2, child: buildBox('A')),
+              const SizedBox(width: 8),
+              Expanded(child: buildBox('B')),
             ],
           ),
+
+          const SizedBox(height: 24),
+
+          const Text(
+            'Flexible',
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          ),
+
+          const SizedBox(height: 10),
+
+          Row(
+            children: [
+              Flexible(
+                child: Container(
+                  height: 60,
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    border: Border.all(),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Text(
+                    'Flexible menyesuaikan ruang yang tersedia.',
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              const Icon(Icons.phone_android, size: 45),
+            ],
+          ),
+
+          const SizedBox(height: 24),
+
+          const Text(
+            'Wrap - Skills',
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          ),
+
+          const SizedBox(height: 10),
+
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: skills.map((skill) => Chip(label: Text(skill))).toList(),
+          ),
+
+          const SizedBox(height: 24),
+
+          const Text(
+            'Perbandingan dengan Row',
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          ),
+
+          const SizedBox(height: 8),
+
+          const Text(
+            'Row biasa tetap menyusun child dalam satu baris sehingga '
+            'dapat mengalami overflow ketika ruang tidak cukup. '
+            'Wrap akan memindahkan child ke baris berikutnya.',
+          ),
         ],
       ),
     );
   }
-}
 
-class ExpandedLayout extends StatelessWidget {
-  const ExpandedLayout({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Container(
-        padding: const EdgeInsets.all(30),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.desktop_windows, size: 100),
-            const SizedBox(height: 20),
-            const Text(
-              'Expanded Layout',
-              style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 10),
-            Text(studentName),
-            Text(studentId),
-            const SizedBox(height: 10),
-            const Text('Lebar layar ≥ 840'),
-          ],
+  static Widget buildBox(String text) {
+    return Container(
+      height: 100,
+      decoration: BoxDecoration(
+        border: Border.all(),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Center(
+        child: Text(
+          text,
+          style: const TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
         ),
       ),
     );
