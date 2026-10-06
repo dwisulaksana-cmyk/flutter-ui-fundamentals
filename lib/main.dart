@@ -14,129 +14,134 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: Scaffold(
-        appBar: AppBar(title: const Text('Tahap 4 - Layout')),
-        body: const Padding(padding: EdgeInsets.all(16), child: Tahap4()),
+      title: 'Tahap 5',
+      home: const CoursePage(),
+    );
+  }
+}
+
+class CoursePage extends StatelessWidget {
+  const CoursePage({super.key});
+
+  final List<Map<String, String>> courses = const [
+    {
+      'code': 'PTI101',
+      'name': 'Pemrograman Dasar',
+      'description': 'Dasar-dasar pemrograman dan algoritma.',
+    },
+    {
+      'code': 'PTI102',
+      'name': 'Pemrograman Mobile',
+      'description': 'Pengembangan aplikasi mobile menggunakan Flutter.',
+    },
+    {
+      'code': 'PTI103',
+      'name': 'Basis Data',
+      'description': 'Konsep dan pengelolaan basis data.',
+    },
+    {
+      'code': 'PTI104',
+      'name': 'Jaringan Komputer',
+      'description': 'Dasar jaringan dan komunikasi komputer.',
+    },
+    {
+      'code': 'PTI105',
+      'name': 'Rekayasa Perangkat Lunak',
+      'description': 'Analisis dan pengembangan perangkat lunak.',
+    },
+    {
+      'code': 'PTI106',
+      'name': 'Desain UI/UX',
+      'description': 'Perancangan antarmuka dan pengalaman pengguna.',
+    },
+  ];
+
+  int columnsFor(double width) {
+    if (width < 600) return 1;
+    if (width < 840) return 2;
+    return 3;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Tahap 5 - GridView Responsif')),
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          final columns = columnsFor(constraints.maxWidth);
+
+          return Column(
+            children: [
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(16),
+                child: const Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      studentName,
+                      style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    SizedBox(height: 4),
+                    Text(studentId, style: TextStyle(fontSize: 16)),
+                  ],
+                ),
+              ),
+
+              Expanded(
+                child: GridView.builder(
+                  padding: const EdgeInsets.all(16),
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: columns,
+                    crossAxisSpacing: 12,
+                    mainAxisSpacing: 12,
+                    childAspectRatio: 1.4,
+                  ),
+                  itemCount: courses.length,
+                  itemBuilder: (context, index) {
+                    return CourseCard(course: courses[index]);
+                  },
+                ),
+              ),
+            ],
+          );
+        },
       ),
     );
   }
 }
 
-class Tahap4 extends StatelessWidget {
-  const Tahap4({super.key});
+class CourseCard extends StatelessWidget {
+  final Map<String, String> course;
+
+  const CourseCard({super.key, required this.course});
 
   @override
   Widget build(BuildContext context) {
-    final skills = [
-      'Flutter',
-      'Dart',
-      'UI Design',
-      'Git',
-      'Firebase',
-      'Android',
-    ];
-
-    return SingleChildScrollView(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            studentName,
-            style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-          ),
-          const Text(studentId),
-
-          const SizedBox(height: 24),
-
-          const Text(
-            'Expanded 2:1',
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-          ),
-
-          const SizedBox(height: 10),
-
-          Row(
-            children: [
-              Expanded(flex: 2, child: buildBox('A')),
-              const SizedBox(width: 8),
-              Expanded(child: buildBox('B')),
-            ],
-          ),
-
-          const SizedBox(height: 24),
-
-          const Text(
-            'Flexible',
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-          ),
-
-          const SizedBox(height: 10),
-
-          Row(
-            children: [
-              Flexible(
-                child: Container(
-                  height: 60,
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    border: Border.all(),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: const Text(
-                    'Flexible menyesuaikan ruang yang tersedia.',
-                  ),
-                ),
-              ),
-              const SizedBox(width: 8),
-              const Icon(Icons.phone_android, size: 45),
-            ],
-          ),
-
-          const SizedBox(height: 24),
-
-          const Text(
-            'Wrap - Skills',
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-          ),
-
-          const SizedBox(height: 10),
-
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: skills.map((skill) => Chip(label: Text(skill))).toList(),
-          ),
-
-          const SizedBox(height: 24),
-
-          const Text(
-            'Perbandingan dengan Row',
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-          ),
-
-          const SizedBox(height: 8),
-
-          const Text(
-            'Row biasa tetap menyusun child dalam satu baris sehingga '
-            'dapat mengalami overflow ketika ruang tidak cukup. '
-            'Wrap akan memindahkan child ke baris berikutnya.',
-          ),
-        ],
-      ),
-    );
-  }
-
-  static Widget buildBox(String text) {
-    return Container(
-      height: 100,
-      decoration: BoxDecoration(
-        border: Border.all(),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Center(
-        child: Text(
-          text,
-          style: const TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
+    return Card(
+      elevation: 3,
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Icon(Icons.menu_book, size: 40),
+            const SizedBox(height: 10),
+            Text(
+              course['code']!,
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              course['name']!,
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 6),
+            Text(course['description']!),
+          ],
         ),
       ),
     );
