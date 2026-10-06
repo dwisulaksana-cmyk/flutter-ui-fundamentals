@@ -15,40 +15,66 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       home: Scaffold(
-        appBar: AppBar(title: const Text('Tahap 5')),
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const CircleAvatar(
-                radius: 46,
-                backgroundImage: AssetImage('assets/images/profile.jpg'),
-              ),
-              const SizedBox(height: 12),
-              Text(
-                studentName,
-                style: const TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
+        appBar: AppBar(title: const Text('Tahap 6')),
+        body: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const CircleAvatar(
+              radius: 50,
+              backgroundImage: AssetImage('assets/images/profile.jpg'),
+            ),
+            const SizedBox(height: 16),
+            Text(studentId, style: const TextStyle(fontSize: 18)),
+            Text(
+              studentName,
+              style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 30),
+
+            // Statistik
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: const [
+                Column(
+                  children: [
+                    Text(
+                      '3',
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Text('Widget'),
+                  ],
                 ),
-              ),
-              Text(studentId),
-              const SizedBox(height: 8),
-              const Text(
-                'Minat: Pemrograman Mobile dan Desain',
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 12),
-              const Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.phone_android),
-                  SizedBox(width: 8),
-                  Text('Mobile Programming'),
-                ],
-              ),
-            ],
-          ),
+                Column(
+                  children: [
+                    Text(
+                      '2',
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Text('Layout'),
+                  ],
+                ),
+                Column(
+                  children: [
+                    Text(
+                      '1',
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Text('State'),
+                  ],
+                ),
+              ],
+            ),
+          ],
         ),
       ),
     );
