@@ -7,28 +7,12 @@ final List<Map<String, dynamic>> topics = [
   {
     'title': 'Flutter UI',
     'subtitle': 'Mengenal widget dasar Flutter',
-    'status': 'Selesai',
+    'done': true,
   },
-  {
-    'title': 'Layout',
-    'subtitle': 'Column, Row, dan Container',
-    'status': 'Selesai',
-  },
-  {
-    'title': 'State',
-    'subtitle': 'StatefulWidget dan setState',
-    'status': 'Berlangsung',
-  },
-  {
-    'title': 'Input',
-    'subtitle': 'TextField dan controller',
-    'status': 'Berlangsung',
-  },
-  {
-    'title': 'List',
-    'subtitle': 'ListView dan data collection',
-    'status': 'Belum',
-  },
+  {'title': 'Layout', 'subtitle': 'Column, Row, dan Container', 'done': true},
+  {'title': 'State', 'subtitle': 'StatefulWidget dan setState', 'done': false},
+  {'title': 'Input', 'subtitle': 'TextField dan controller', 'done': false},
+  {'title': 'List', 'subtitle': 'ListView dan data collection', 'done': false},
 ];
 
 void main() {
@@ -40,13 +24,15 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final int completed = topics.where((item) => item['done'] == true).length;
+
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       home: Scaffold(
-        appBar: AppBar(title: const Text('Tahap 10')),
+        appBar: AppBar(title: const Text('Tahap 11')),
         body: Column(
           children: [
-            const SizedBox(height: 20),
+            const SizedBox(height: 16),
 
             const CircleAvatar(
               radius: 45,
@@ -62,22 +48,30 @@ class MyApp extends StatelessWidget {
               style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
             ),
 
-            const SizedBox(height: 20),
+            const SizedBox(height: 10),
+
+            Text(
+              '$completed dari ${topics.length} topik selesai',
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+
+            const SizedBox(height: 10),
 
             Expanded(
-              child: ListView.builder(
+              child: ListView.separated(
                 padding: const EdgeInsets.all(12),
                 itemCount: topics.length,
+                separatorBuilder: (context, index) => const SizedBox(height: 8),
                 itemBuilder: (context, index) {
-                  final topic = topics[index];
+                  final item = topics[index];
+                  final bool done = item['done'] == true;
 
                   return Card(
-                    margin: const EdgeInsets.only(bottom: 8),
                     child: ListTile(
-                      leading: const Icon(Icons.book),
-                      title: Text(topic['title']),
-                      subtitle: Text(topic['subtitle']),
-                      trailing: Text(topic['status']),
+                      leading: Icon(done ? Icons.check_circle : Icons.schedule),
+                      title: Text(item['title'] as String),
+                      subtitle: Text(item['subtitle'] as String),
+                      trailing: Text(done ? 'Selesai' : 'Belum'),
                     ),
                   );
                 },
