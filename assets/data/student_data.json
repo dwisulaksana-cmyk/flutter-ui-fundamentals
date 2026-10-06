@@ -1,4 +1,38 @@
 {
-  "studentId": "2415051047",
-  "studentName": "Made Dwi Sulaksana"
+  "student": {
+    "nim": "2415051047",
+    "name": "Made Dwi Sulaksana"
+  },
+  "courses": [
+    {
+      "code": "MOB01",
+      "title": "Git & GitHub",
+      "credits": 2,
+      "status": "done"
+    },
+    {
+      "code": "MOB02",
+      "title": "Dart Fundamentals",
+      "credits": 2,
+      "status": "done"
+    },
+    {
+      "code": "MOB03",
+      "title": "Flutter UI Fundamentals",
+      "credits": 3,
+      "status": "active"
+    },
+    {
+      "code": "MOB04",
+      "title": "Navigation",
+      "credits": 2,
+      "status": "planned"
+    },
+    {
+      "code": "MOB05",
+      "title": "State Management",
+      "credits": 3,
+      "status": "planned"
+    }
+  ]
 }
