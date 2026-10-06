@@ -204,9 +204,24 @@ class _DashboardPageState extends State<DashboardPage> {
           // Error state
           if (snapshot.hasError) {
             return Center(
-              child: Text(
-                'Gagal memuat data: ${snapshot.error}',
-                textAlign: TextAlign.center,
+              child: Padding(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.error_outline, size: 60),
+                    const SizedBox(height: 16),
+                    const Text(
+                      'Gagal memuat data',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text('${snapshot.error}', textAlign: TextAlign.center),
+                  ],
+                ),
               ),
             );
           }
