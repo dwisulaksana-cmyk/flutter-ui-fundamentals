@@ -14,193 +14,139 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Tahap 11',
+      title: 'Tahap 12',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
         useMaterial3: true,
       ),
-      home: const MainShell(),
+      home: const CoursePage(),
     );
   }
 }
 
-class MainShell extends StatefulWidget {
-  const MainShell({super.key});
+class CoursePage extends StatelessWidget {
+  const CoursePage({super.key});
 
-  @override
-  State<MainShell> createState() => _MainShellState();
-}
-
-class _MainShellState extends State<MainShell> {
-  int selectedIndex = 0;
-
-  final List<Widget> pages = const [HomePage(), CoursesPage(), ProfilePage()];
-
-  NavigationBar buildNavigationBar() {
-    return NavigationBar(
-      selectedIndex: selectedIndex,
-      onDestinationSelected: (index) {
-        setState(() {
-          selectedIndex = index;
-        });
-      },
-      destinations: const [
-        NavigationDestination(
-          icon: Icon(Icons.home_outlined),
-          selectedIcon: Icon(Icons.home),
-          label: 'Home',
-        ),
-        NavigationDestination(
-          icon: Icon(Icons.school_outlined),
-          selectedIcon: Icon(Icons.school),
-          label: 'Courses',
-        ),
-        NavigationDestination(
-          icon: Icon(Icons.person_outline),
-          selectedIcon: Icon(Icons.person),
-          label: 'Profile',
-        ),
-      ],
-    );
-  }
-
-  NavigationRail buildNavigationRail() {
-    return NavigationRail(
-      selectedIndex: selectedIndex,
-      onDestinationSelected: (index) {
-        setState(() {
-          selectedIndex = index;
-        });
-      },
-      labelType: NavigationRailLabelType.all,
-      destinations: const [
-        NavigationRailDestination(
-          icon: Icon(Icons.home_outlined),
-          selectedIcon: Icon(Icons.home),
-          label: Text('Home'),
-        ),
-        NavigationRailDestination(
-          icon: Icon(Icons.school_outlined),
-          selectedIcon: Icon(Icons.school),
-          label: Text('Courses'),
-        ),
-        NavigationRailDestination(
-          icon: Icon(Icons.person_outline),
-          selectedIcon: Icon(Icons.person),
-          label: Text('Profile'),
-        ),
-      ],
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        if (constraints.maxWidth < 840) {
-          return Scaffold(
-            body: pages[selectedIndex],
-            bottomNavigationBar: buildNavigationBar(),
-          );
-        }
-
-        return Scaffold(
-          body: Row(
-            children: [
-              buildNavigationRail(),
-              const VerticalDivider(width: 1),
-              Expanded(child: pages[selectedIndex]),
-            ],
-          ),
-        );
-      },
-    );
-  }
-}
-
-class HomePage extends StatelessWidget {
-  const HomePage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Home')),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: const [
-            Icon(Icons.home, size: 80),
-            SizedBox(height: 20),
-            Text(
-              'Selamat Datang',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 8),
-            Text(studentName),
-            Text(studentId),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class CoursesPage extends StatelessWidget {
-  const CoursesPage({super.key});
-
-  final List<String> courses = const [
-    'Pemrograman Dasar',
-    'Pemrograman Mobile',
-    'Basis Data',
-    'Jaringan Komputer',
-    'Rekayasa Perangkat Lunak',
-    'Desain UI/UX',
+  final List<Map<String, dynamic>> courses = const [
+    {'code': 'PTI101', 'title': 'Pemrograman Dasar', 'credits': 3},
+    {'code': 'PTI102', 'title': 'Pemrograman Mobile', 'credits': 3},
+    {'code': 'PTI103', 'title': 'Basis Data', 'credits': 3},
+    {'code': 'PTI104', 'title': 'Jaringan Komputer', 'credits': 3},
+    {'code': 'PTI105', 'title': 'Rekayasa Perangkat Lunak', 'credits': 3},
+    {'code': 'PTI106', 'title': 'Desain UI/UX', 'credits': 2},
   ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Courses')),
-      body: ListView.builder(
+      body: ListView(
         padding: const EdgeInsets.all(16),
-        itemCount: courses.length,
-        itemBuilder: (context, index) {
-          return Card(
-            margin: const EdgeInsets.only(bottom: 10),
-            child: ListTile(
-              leading: CircleAvatar(child: Text('${index + 1}')),
-              title: Text(courses[index]),
-              trailing: const Icon(Icons.arrow_forward_ios),
+        children: [
+          const Text(
+            studentName,
+            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 4),
+          const Text(studentId, style: TextStyle(fontSize: 16)),
+          const SizedBox(height: 20),
+
+          ...courses.map(
+            (course) => Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: CourseCard(course: course),
             ),
-          );
-        },
+          ),
+        ],
       ),
     );
   }
 }
 
-class ProfilePage extends StatelessWidget {
-  const ProfilePage({super.key});
+class CourseCard extends StatefulWidget {
+  final Map<String, dynamic> course;
+
+  const CourseCard({super.key, required this.course});
+
+  @override
+  State<CourseCard> createState() => _CourseCardState();
+}
+
+class _CourseCardState extends State<CourseCard> {
+  bool isFavorite = false;
+
+  void showCourseInfo() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          '${widget.course['title']} - ${widget.course['credits']} SKS',
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Profile')),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: const [
-            CircleAvatar(radius: 50, child: Icon(Icons.person, size: 55)),
-            SizedBox(height: 20),
-            Text(
-              studentName,
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+    return GestureDetector(
+      onLongPress: showCourseInfo,
+      child: Card(
+        elevation: 3,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(12),
+          onTap: () {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('${widget.course['title']} dipilih')),
+            );
+          },
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              children: [
+                CircleAvatar(
+                  radius: 26,
+                  child: Text(widget.course['code'].substring(3)),
+                ),
+                const SizedBox(width: 16),
+
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        widget.course['title'],
+                        style: const TextStyle(
+                          fontSize: 17,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 5),
+                      Text(
+                        '${widget.course['code']} • '
+                        '${widget.course['credits']} SKS',
+                      ),
+                      const SizedBox(height: 5),
+                      const Text(
+                        'Tap untuk memilih • Long press untuk info',
+                        style: TextStyle(fontSize: 12),
+                      ),
+                    ],
+                  ),
+                ),
+
+                IconButton(
+                  onPressed: () {
+                    setState(() {
+                      isFavorite = !isFavorite;
+                    });
+                  },
+                  icon: Icon(
+                    isFavorite ? Icons.favorite : Icons.favorite_border,
+                  ),
+                  tooltip: 'Favorite',
+                ),
+              ],
             ),
-            SizedBox(height: 8),
-            Text(studentId, style: TextStyle(fontSize: 18)),
-            SizedBox(height: 8),
-            Text('Pendidikan Teknik Informatika'),
-          ],
+          ),
         ),
       ),
     );
