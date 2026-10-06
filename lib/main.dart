@@ -14,32 +14,58 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: Scaffold(
-        appBar: AppBar(title: const Text('Tahap 1 - Responsive Problem')),
-        body: Center(
-          child: Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              border: Border.all(),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: const Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  studentName,
-                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+      home: const MediaQueryPage(),
+    );
+  }
+}
+
+class MediaQueryPage extends StatelessWidget {
+  const MediaQueryPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+    final orientation = MediaQuery.of(context).orientation;
+
+    final String screenCategory = size.width < 600 ? 'Compact' : 'Wide';
+
+    return Scaffold(
+      appBar: AppBar(title: const Text('Tahap 2 - MediaQuery')),
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Text(
+                studentName,
+                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 8),
+              const Text(studentId, style: TextStyle(fontSize: 18)),
+              const SizedBox(height: 24),
+              Text(
+                'Width: ${size.width.toStringAsFixed(0)}',
+                style: const TextStyle(fontSize: 18),
+              ),
+              Text(
+                'Height: ${size.height.toStringAsFixed(0)}',
+                style: const TextStyle(fontSize: 18),
+              ),
+              Text(
+                'Orientation: $orientation',
+                style: const TextStyle(fontSize: 18),
+              ),
+              const SizedBox(height: 20),
+              Text(
+                screenCategory,
+                style: const TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
                 ),
-                SizedBox(height: 8),
-                Text(studentId),
-                SizedBox(height: 16),
-                Text(
-                  'Container dengan lebar responsif.',
-                  textAlign: TextAlign.center,
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),
