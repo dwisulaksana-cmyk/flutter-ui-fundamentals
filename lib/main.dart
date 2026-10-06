@@ -15,12 +15,23 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       home: Scaffold(
-        appBar: AppBar(title: const Text('Flutter UI Fundamentals')),
+        appBar: AppBar(
+          title: const Text('Tahap 4'),
+        ),
         body: Center(
-          child: Text(
-            '$studentId\n$studentName',
-            textAlign: TextAlign.center,
-            style: const TextStyle(fontSize: 20),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Text('$studentId - $studentName'),
+              const SizedBox(height: 12),
+              const Text('Flutter UI Fundamentals'),
+              const SizedBox(height: 12),
+              const Icon(
+                Icons.flutter_dash,
+                size: 48,
+              ),
+            ],
           ),
         ),
       ),
