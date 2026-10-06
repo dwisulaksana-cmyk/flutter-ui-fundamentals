@@ -14,138 +14,143 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Tahap 12',
+      title: 'Tahap 13',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
         useMaterial3: true,
       ),
-      home: const CoursePage(),
+      home: const FeedbackPage(),
     );
   }
 }
 
-class CoursePage extends StatelessWidget {
-  const CoursePage({super.key});
+class FeedbackPage extends StatefulWidget {
+  const FeedbackPage({super.key});
 
-  final List<Map<String, dynamic>> courses = const [
-    {'code': 'PTI101', 'title': 'Pemrograman Dasar', 'credits': 3},
-    {'code': 'PTI102', 'title': 'Pemrograman Mobile', 'credits': 3},
-    {'code': 'PTI103', 'title': 'Basis Data', 'credits': 3},
-    {'code': 'PTI104', 'title': 'Jaringan Komputer', 'credits': 3},
-    {'code': 'PTI105', 'title': 'Rekayasa Perangkat Lunak', 'credits': 3},
-    {'code': 'PTI106', 'title': 'Desain UI/UX', 'credits': 2},
-  ];
+  @override
+  State<FeedbackPage> createState() => _FeedbackPageState();
+}
+
+class _FeedbackPageState extends State<FeedbackPage> {
+  final formKey = GlobalKey<FormState>();
+
+  final TextEditingController nameController = TextEditingController(
+    text: studentName,
+  );
+
+  final TextEditingController nimController = TextEditingController(
+    text: studentId,
+  );
+
+  final TextEditingController commentController = TextEditingController();
+
+  @override
+  void dispose() {
+    nameController.dispose();
+    nimController.dispose();
+    commentController.dispose();
+    super.dispose();
+  }
+
+  void submitForm() {
+    if (formKey.currentState!.validate()) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Feedback berhasil dikirim!')),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Courses')),
-      body: ListView(
+      appBar: AppBar(title: const Text('Form Feedback')),
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
-        children: [
-          const Text(
-            studentName,
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 4),
-          const Text(studentId, style: TextStyle(fontSize: 16)),
-          const SizedBox(height: 20),
+        child: Form(
+          key: formKey,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                studentName,
+                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 4),
+              const Text(studentId, style: TextStyle(fontSize: 16)),
 
-          ...courses.map(
-            (course) => Padding(
-              padding: const EdgeInsets.only(bottom: 12),
-              child: CourseCard(course: course),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
+              const SizedBox(height: 24),
 
-class CourseCard extends StatefulWidget {
-  final Map<String, dynamic> course;
+              const Text(
+                'Feedback Mahasiswa',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
 
-  const CourseCard({super.key, required this.course});
+              const SizedBox(height: 20),
 
-  @override
-  State<CourseCard> createState() => _CourseCardState();
-}
-
-class _CourseCardState extends State<CourseCard> {
-  bool isFavorite = false;
-
-  void showCourseInfo() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          '${widget.course['title']} - ${widget.course['credits']} SKS',
-        ),
-      ),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onLongPress: showCourseInfo,
-      child: Card(
-        elevation: 3,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(12),
-          onTap: () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('${widget.course['title']} dipilih')),
-            );
-          },
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Row(
-              children: [
-                CircleAvatar(
-                  radius: 26,
-                  child: Text(widget.course['code'].substring(3)),
+              TextFormField(
+                controller: nameController,
+                decoration: const InputDecoration(
+                  labelText: 'Nama',
+                  border: OutlineInputBorder(),
                 ),
-                const SizedBox(width: 16),
+                validator: (value) {
+                  if (value == null || value.trim().isEmpty) {
+                    return 'Nama wajib diisi';
+                  }
+                  return null;
+                },
+              ),
 
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        widget.course['title'],
-                        style: const TextStyle(
-                          fontSize: 17,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 5),
-                      Text(
-                        '${widget.course['code']} • '
-                        '${widget.course['credits']} SKS',
-                      ),
-                      const SizedBox(height: 5),
-                      const Text(
-                        'Tap untuk memilih • Long press untuk info',
-                        style: TextStyle(fontSize: 12),
-                      ),
-                    ],
-                  ),
-                ),
+              const SizedBox(height: 16),
 
-                IconButton(
-                  onPressed: () {
-                    setState(() {
-                      isFavorite = !isFavorite;
-                    });
-                  },
-                  icon: Icon(
-                    isFavorite ? Icons.favorite : Icons.favorite_border,
-                  ),
-                  tooltip: 'Favorite',
+              TextFormField(
+                controller: nimController,
+                decoration: const InputDecoration(
+                  labelText: 'NIM',
+                  border: OutlineInputBorder(),
                 ),
-              ],
-            ),
+                validator: (value) {
+                  if (value == null || value.trim().isEmpty) {
+                    return 'NIM wajib diisi';
+                  }
+                  return null;
+                },
+              ),
+
+              const SizedBox(height: 16),
+
+              TextFormField(
+                controller: commentController,
+                maxLines: 5,
+                decoration: const InputDecoration(
+                  labelText: 'Komentar',
+                  hintText: 'Tulis komentar minimal 5 karakter',
+                  border: OutlineInputBorder(),
+                ),
+                validator: (value) {
+                  if (value == null || value.trim().isEmpty) {
+                    return 'Komentar wajib diisi';
+                  }
+
+                  if (value.trim().length < 5) {
+                    return 'Komentar minimal 5 karakter';
+                  }
+
+                  return null;
+                },
+              ),
+
+              const SizedBox(height: 24),
+
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: submitForm,
+                  icon: const Icon(Icons.send),
+                  label: const Text('Kirim Feedback'),
+                ),
+              ),
+            ],
           ),
         ),
       ),
