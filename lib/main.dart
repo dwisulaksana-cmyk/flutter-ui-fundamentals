@@ -14,57 +14,106 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Tahap 10',
+      title: 'Tahap 11',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
         useMaterial3: true,
       ),
-      home: const MainPage(),
+      home: const MainShell(),
     );
   }
 }
 
-class MainPage extends StatefulWidget {
-  const MainPage({super.key});
+class MainShell extends StatefulWidget {
+  const MainShell({super.key});
 
   @override
-  State<MainPage> createState() => _MainPageState();
+  State<MainShell> createState() => _MainShellState();
 }
 
-class _MainPageState extends State<MainPage> {
-  int currentIndex = 0;
+class _MainShellState extends State<MainShell> {
+  int selectedIndex = 0;
 
   final List<Widget> pages = const [HomePage(), CoursesPage(), ProfilePage()];
 
+  NavigationBar buildNavigationBar() {
+    return NavigationBar(
+      selectedIndex: selectedIndex,
+      onDestinationSelected: (index) {
+        setState(() {
+          selectedIndex = index;
+        });
+      },
+      destinations: const [
+        NavigationDestination(
+          icon: Icon(Icons.home_outlined),
+          selectedIcon: Icon(Icons.home),
+          label: 'Home',
+        ),
+        NavigationDestination(
+          icon: Icon(Icons.school_outlined),
+          selectedIcon: Icon(Icons.school),
+          label: 'Courses',
+        ),
+        NavigationDestination(
+          icon: Icon(Icons.person_outline),
+          selectedIcon: Icon(Icons.person),
+          label: 'Profile',
+        ),
+      ],
+    );
+  }
+
+  NavigationRail buildNavigationRail() {
+    return NavigationRail(
+      selectedIndex: selectedIndex,
+      onDestinationSelected: (index) {
+        setState(() {
+          selectedIndex = index;
+        });
+      },
+      labelType: NavigationRailLabelType.all,
+      destinations: const [
+        NavigationRailDestination(
+          icon: Icon(Icons.home_outlined),
+          selectedIcon: Icon(Icons.home),
+          label: Text('Home'),
+        ),
+        NavigationRailDestination(
+          icon: Icon(Icons.school_outlined),
+          selectedIcon: Icon(Icons.school),
+          label: Text('Courses'),
+        ),
+        NavigationRailDestination(
+          icon: Icon(Icons.person_outline),
+          selectedIcon: Icon(Icons.person),
+          label: Text('Profile'),
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: pages[currentIndex],
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: currentIndex,
-        onDestinationSelected: (index) {
-          setState(() {
-            currentIndex = index;
-          });
-        },
-        destinations: const [
-          NavigationDestination(
-            icon: Icon(Icons.home_outlined),
-            selectedIcon: Icon(Icons.home),
-            label: 'Home',
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        if (constraints.maxWidth < 840) {
+          return Scaffold(
+            body: pages[selectedIndex],
+            bottomNavigationBar: buildNavigationBar(),
+          );
+        }
+
+        return Scaffold(
+          body: Row(
+            children: [
+              buildNavigationRail(),
+              const VerticalDivider(width: 1),
+              Expanded(child: pages[selectedIndex]),
+            ],
           ),
-          NavigationDestination(
-            icon: Icon(Icons.school_outlined),
-            selectedIcon: Icon(Icons.school),
-            label: 'Courses',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.person_outline),
-            selectedIcon: Icon(Icons.person),
-            label: 'Profile',
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 }
