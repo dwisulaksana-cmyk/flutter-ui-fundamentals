@@ -3,41 +3,65 @@ import 'package:flutter/material.dart';
 const String studentName = 'Made Dwi Sulaksana';
 const String studentId = '2415051047';
 
-class InfoCard extends StatelessWidget {
-  final String title;
-  final String value;
-  final IconData icon;
+class GreetingCard extends StatefulWidget {
+  const GreetingCard({super.key});
 
-  const InfoCard({
-    super.key,
-    required this.title,
-    required this.value,
-    required this.icon,
-  });
+  @override
+  State<GreetingCard> createState() => _GreetingCardState();
+}
+
+class _GreetingCardState extends State<GreetingCard> {
+  final TextEditingController controller = TextEditingController();
+
+  String message = 'Belum ada pesan';
+
+  void tampilkanPesan() {
+    setState(() {
+      final input = controller.text.trim();
+
+      message = input.isEmpty ? 'Input masih kosong' : 'Halo, $input!';
+    });
+  }
+
+  @override
+  void dispose() {
+    controller.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Expanded(
-      child: Card(
-        elevation: 3,
-        child: Padding(
-          padding: const EdgeInsets.all(12),
-          child: Column(
-            children: [
-              Icon(icon, size: 32),
-              const SizedBox(height: 6),
-              Text(
-                value,
-                style: const TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              Text(title),
-            ],
+    return Column(
+      children: [
+        const Text(
+          'Masukkan nama untuk menampilkan sapaan:',
+          textAlign: TextAlign.center,
+        ),
+        const SizedBox(height: 12),
+
+        TextField(
+          controller: controller,
+          decoration: const InputDecoration(
+            labelText: 'Nama',
+            hintText: 'Masukkan nama kamu',
+            border: OutlineInputBorder(),
           ),
         ),
-      ),
+
+        const SizedBox(height: 12),
+
+        ElevatedButton(
+          onPressed: tampilkanPesan,
+          child: const Text('Tampilkan'),
+        ),
+
+        const SizedBox(height: 16),
+
+        Text(
+          message,
+          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+        ),
+      ],
     );
   }
 }
@@ -54,7 +78,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       home: Scaffold(
-        appBar: AppBar(title: const Text('Tahap 8')),
+        appBar: AppBar(title: const Text('Tahap 9')),
         body: Padding(
           padding: const EdgeInsets.all(20),
           child: Column(
@@ -64,34 +88,19 @@ class MyApp extends StatelessWidget {
                 radius: 50,
                 backgroundImage: AssetImage('assets/images/profile.jpg'),
               ),
+
               const SizedBox(height: 16),
 
-              Text(studentId, style: const TextStyle(fontSize: 18)),
-              Text(
-                studentName,
-                style: const TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-
-              const SizedBox(height: 8),
+              const Text(studentId, style: TextStyle(fontSize: 18)),
 
               const Text(
-                'Mahasiswa Pendidikan Teknik Informatika',
-                textAlign: TextAlign.center,
+                studentName,
+                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
               ),
 
-              const SizedBox(height: 25),
+              const SizedBox(height: 30),
 
-              // Reusable Widget digunakan 3 kali
-              Row(
-                children: const [
-                  InfoCard(title: 'Widget', value: '3', icon: Icons.widgets),
-                  InfoCard(title: 'Layout', value: '2', icon: Icons.view_quilt),
-                  InfoCard(title: 'State', value: '1', icon: Icons.sync),
-                ],
-              ),
+              const GreetingCard(),
             ],
           ),
         ),
