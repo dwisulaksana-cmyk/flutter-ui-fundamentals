@@ -14,59 +14,104 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: const MediaQueryPage(),
+      home: Scaffold(
+        appBar: AppBar(title: const Text('LayoutBuilder & Breakpoint')),
+        body: LayoutBuilder(
+          builder: (context, constraints) {
+            if (constraints.maxWidth < 600) {
+              return const CompactLayout();
+            } else if (constraints.maxWidth < 840) {
+              return const MediumLayout();
+            } else {
+              return const ExpandedLayout();
+            }
+          },
+        ),
+      ),
     );
   }
 }
 
-class MediaQueryPage extends StatelessWidget {
-  const MediaQueryPage({super.key});
+class CompactLayout extends StatelessWidget {
+  const CompactLayout({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.of(context).size;
-    final orientation = MediaQuery.of(context).orientation;
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(Icons.phone_android, size: 80),
+          const SizedBox(height: 20),
+          const Text(
+            'Compact Layout',
+            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 10),
+          Text(studentName),
+          Text(studentId),
+          const SizedBox(height: 10),
+          const Text('Lebar layar < 600'),
+        ],
+      ),
+    );
+  }
+}
 
-    final String screenCategory = size.width < 600 ? 'Compact' : 'Wide';
+class MediumLayout extends StatelessWidget {
+  const MediumLayout({super.key});
 
-    return Scaffold(
-      appBar: AppBar(title: const Text('Tahap 2 - MediaQuery')),
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Column(
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(Icons.tablet_android, size: 90),
+          const SizedBox(width: 30),
+          Column(
             mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Text(
-                studentName,
-                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-                textAlign: TextAlign.center,
+                'Medium Layout',
+                style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold),
               ),
-              const SizedBox(height: 8),
-              const Text(studentId, style: TextStyle(fontSize: 18)),
-              const SizedBox(height: 24),
-              Text(
-                'Width: ${size.width.toStringAsFixed(0)}',
-                style: const TextStyle(fontSize: 18),
-              ),
-              Text(
-                'Height: ${size.height.toStringAsFixed(0)}',
-                style: const TextStyle(fontSize: 18),
-              ),
-              Text(
-                'Orientation: $orientation',
-                style: const TextStyle(fontSize: 18),
-              ),
-              const SizedBox(height: 20),
-              Text(
-                screenCategory,
-                style: const TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
+              Text(studentName),
+              Text(studentId),
+              const SizedBox(height: 10),
+              const Text('Lebar layar 600–839'),
             ],
           ),
+        ],
+      ),
+    );
+  }
+}
+
+class ExpandedLayout extends StatelessWidget {
+  const ExpandedLayout({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Container(
+        padding: const EdgeInsets.all(30),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.desktop_windows, size: 100),
+            const SizedBox(height: 20),
+            const Text(
+              'Expanded Layout',
+              style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 10),
+            Text(studentName),
+            Text(studentId),
+            const SizedBox(height: 10),
+            const Text('Lebar layar ≥ 840'),
+          ],
         ),
       ),
     );
