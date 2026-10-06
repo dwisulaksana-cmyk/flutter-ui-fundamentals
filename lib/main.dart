@@ -15,21 +15,37 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       home: Scaffold(
-        appBar: AppBar(
-          title: const Text('Tahap 4'),
-        ),
+        appBar: AppBar(title: const Text('Tahap 5')),
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Text('$studentId - $studentName'),
+              const CircleAvatar(
+                radius: 46,
+                backgroundImage: AssetImage('assets/images/profile.jpg'),
+              ),
               const SizedBox(height: 12),
-              const Text('Flutter UI Fundamentals'),
+              Text(
+                studentName,
+                style: const TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              Text(studentId),
+              const SizedBox(height: 8),
+              const Text(
+                'Minat: Pemrograman Mobile dan Desain',
+                textAlign: TextAlign.center,
+              ),
               const SizedBox(height: 12),
-              const Icon(
-                Icons.flutter_dash,
-                size: 48,
+              const Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.phone_android),
+                  SizedBox(width: 8),
+                  Text('Mobile Programming'),
+                ],
               ),
             ],
           ),
