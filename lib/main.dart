@@ -14,7 +14,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Tahap 8',
+      title: 'Tahap 9',
       home: const CoursePage(),
     );
   }
@@ -57,6 +57,24 @@ class CoursePage extends StatelessWidget {
     },
   ];
 
+  Future<void> openDetail(
+    BuildContext context,
+    Map<String, dynamic> course,
+  ) async {
+    final result = await Navigator.push<bool>(
+      context,
+      MaterialPageRoute(builder: (_) => CourseDetailPage(course: course)),
+    );
+
+    if (result == true && context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('${course['title']} berhasil dipilih sebagai favorit.'),
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -79,14 +97,7 @@ class CoursePage extends StatelessWidget {
                 '${course['code']} • ${course['credits']} SKS • ${course['status']}',
               ),
               trailing: const Icon(Icons.arrow_forward_ios),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => CourseDetailPage(course: course),
-                  ),
-                );
-              },
+              onTap: () => openDetail(context, course),
             ),
           );
         },
@@ -137,6 +148,19 @@ class CourseDetailPage extends StatelessWidget {
             Text('SKS: ${course['credits']}'),
             const SizedBox(height: 8),
             Text('Status: ${course['status']}'),
+
+            const SizedBox(height: 30),
+
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: () {
+                  Navigator.pop(context, true);
+                },
+                icon: const Icon(Icons.favorite),
+                label: const Text('Pilih/Favorite'),
+              ),
+            ),
           ],
         ),
       ),
