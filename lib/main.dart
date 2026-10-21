@@ -1,11 +1,9 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 import 'course_state.dart';
 import 'models/course.dart';
+import 'services/course_service.dart';
 
 void main() {
   runApp(
@@ -31,16 +29,6 @@ class CourseExplorerApp extends StatelessWidget {
       home: const ResponsiveShell(),
     );
   }
-}
-
-Future<List<Course>> loadCourses() async {
-  final jsonString = await rootBundle.loadString('assets/data/courses.json');
-
-  final List<dynamic> jsonList = jsonDecode(jsonString) as List<dynamic>;
-
-  return jsonList.map((item) {
-    return Course.fromJson(item as Map<String, dynamic>);
-  }).toList();
 }
 
 class ResponsiveShell extends StatefulWidget {
@@ -200,7 +188,7 @@ class _CoursesPageState extends State<CoursesPage> {
   @override
   void initState() {
     super.initState();
-    coursesFuture = loadCourses();
+    coursesFuture = CourseService().loadCourses();
   }
 
   @override
@@ -240,9 +228,7 @@ class _CoursesPageState extends State<CoursesPage> {
               style: Theme.of(context).textTheme.headlineSmall,
             ),
             const SizedBox(height: 8),
-            const Text(
-              'Data dimuat dari JSON dan diubah menjadi objek Course.',
-            ),
+            const Text('Data dimuat melalui CourseService.'),
             const SizedBox(height: 12),
             ...courses.map(
               (course) => CourseCard(
