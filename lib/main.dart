@@ -78,7 +78,7 @@ const List<Course> courses = [
   ),
 ];
 
-// Navigasi responsif
+// Parent: menyimpan shared state favorit
 class ResponsiveShell extends StatefulWidget {
   const ResponsiveShell({super.key});
 
@@ -87,8 +87,20 @@ class ResponsiveShell extends StatefulWidget {
 }
 
 class _ResponsiveShellState extends State<ResponsiveShell> {
-  // Local state: hanya dikelola oleh widget navigasi ini.
   int selectedIndex = 0;
+
+  // Satu sumber data favorit untuk seluruh aplikasi.
+  final Set<String> favoriteCourseCodes = <String>{};
+
+  void toggleFavorite(Course course) {
+    setState(() {
+      if (favoriteCourseCodes.contains(course.code)) {
+        favoriteCourseCodes.remove(course.code);
+      } else {
+        favoriteCourseCodes.add(course.code);
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -98,7 +110,12 @@ class _ResponsiveShellState extends State<ResponsiveShell> {
 
         final pages = [
           const HomePage(),
-          CoursesPage(expanded: expanded, onOpenCourse: openCourseDetail),
+          CoursesPage(
+            expanded: expanded,
+            onOpenCourse: openCourseDetail,
+            favoriteCourseCodes: favoriteCourseCodes,
+            onToggleFavorite: toggleFavorite,
+          ),
           const ProfilePage(),
         ];
 
@@ -173,7 +190,20 @@ class _ResponsiveShellState extends State<ResponsiveShell> {
   void openCourseDetail(Course course) {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => CourseDetailPage(course: course)),
+      MaterialPageRoute(
+        builder: (context) => StatefulBuilder(
+          builder: (context, setDetailState) {
+            return CourseDetailPage(
+              course: course,
+              isFavorite: favoriteCourseCodes.contains(course.code),
+              onToggleFavorite: () {
+                toggleFavorite(course);
+                setDetailState(() {});
+              },
+            );
+          },
+        ),
+      ),
     );
   }
 }
@@ -187,7 +217,6 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  // Contoh local state menggunakan setState().
   bool showDescription = false;
 
   @override
@@ -283,11 +312,11 @@ class _HomePageState extends State<HomePage> {
         ),
         const StateInfoCard(
           title: '3. isFavorite',
-          type: 'Local State saat ini',
+          type: 'Shared State',
           description:
-              'Status favorit pada kartu course dikelola oleh masing-masing '
-              'widget. Jika harus sinkron antara daftar dan detail, '
-              'status ini sebaiknya menjadi shared state.',
+              'Status favorit disimpan oleh parent dan diteruskan '
+              'ke kartu serta halaman detail melalui constructor '
+              'dan callback.',
         ),
         const StateInfoCard(
           title: '4. isLoading',
@@ -343,11 +372,15 @@ class StateInfoCard extends StatelessWidget {
 class CoursesPage extends StatelessWidget {
   final bool expanded;
   final ValueChanged<Course> onOpenCourse;
+  final Set<String> favoriteCourseCodes;
+  final ValueChanged<Course> onToggleFavorite;
 
   const CoursesPage({
     super.key,
     required this.expanded,
     required this.onOpenCourse,
+    required this.favoriteCourseCodes,
+    required this.onToggleFavorite,
   });
 
   @override
@@ -365,9 +398,13 @@ class CoursesPage extends StatelessWidget {
             padding: const EdgeInsets.all(12),
             itemCount: courses.length,
             itemBuilder: (context, index) {
+              final course = courses[index];
+
               return CourseCard(
-                course: courses[index],
-                onTap: () => onOpenCourse(courses[index]),
+                course: course,
+                onTap: () => onOpenCourse(course),
+                isFavorite: favoriteCourseCodes.contains(course.code),
+                onToggleFavorite: () => onToggleFavorite(course),
               );
             },
           );
@@ -383,9 +420,13 @@ class CoursesPage extends StatelessWidget {
             childAspectRatio: 1.25,
           ),
           itemBuilder: (context, index) {
+            final course = courses[index];
+
             return CourseCard(
-              course: courses[index],
-              onTap: () => onOpenCourse(courses[index]),
+              course: course,
+              onTap: () => onOpenCourse(course),
+              isFavorite: favoriteCourseCodes.contains(course.code),
+              onToggleFavorite: () => onToggleFavorite(course),
             );
           },
         );
@@ -394,31 +435,32 @@ class CoursesPage extends StatelessWidget {
   }
 }
 
-// Kartu course dengan local favorite state
-class CourseCard extends StatefulWidget {
+// Child: menerima state favorit dan callback dari parent.
+class CourseCard extends StatelessWidget {
   final Course course;
   final VoidCallback onTap;
+  final bool isFavorite;
+  final VoidCallback onToggleFavorite;
 
-  const CourseCard({super.key, required this.course, required this.onTap});
-
-  @override
-  State<CourseCard> createState() => _CourseCardState();
-}
-
-class _CourseCardState extends State<CourseCard> {
-  // Local state: status favorit hanya dimiliki kartu ini.
-  bool isFavorite = false;
+  const CourseCard({
+    super.key,
+    required this.course,
+    required this.onTap,
+    required this.isFavorite,
+    required this.onToggleFavorite,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Card(
       child: InkWell(
         borderRadius: BorderRadius.circular(12),
-        onTap: widget.onTap,
+        onTap: onTap,
         child: Padding(
           padding: const EdgeInsets.all(12),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
             children: [
               Row(
                 children: [
@@ -426,7 +468,7 @@ class _CourseCardState extends State<CourseCard> {
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      widget.course.code,
+                      course.code,
                       style: const TextStyle(fontWeight: FontWeight.bold),
                     ),
                   ),
@@ -435,16 +477,14 @@ class _CourseCardState extends State<CourseCard> {
                         ? 'Hapus dari favorit'
                         : 'Tambahkan ke favorit',
                     onPressed: () {
-                      setState(() {
-                        isFavorite = !isFavorite;
-                      });
+                      onToggleFavorite();
 
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
                           content: Text(
                             isFavorite
-                                ? 'Course ditambahkan ke favorit'
-                                : 'Course dihapus dari favorit',
+                                ? 'Course dihapus dari favorit'
+                                : 'Course ditambahkan ke favorit',
                           ),
                           duration: const Duration(seconds: 1),
                         ),
@@ -459,12 +499,12 @@ class _CourseCardState extends State<CourseCard> {
               ),
               const SizedBox(height: 8),
               Text(
-                widget.course.title,
+                course.title,
                 style: Theme.of(context).textTheme.titleMedium,
               ),
               const SizedBox(height: 6),
-              Text('${widget.course.credits} SKS'),
-              const Spacer(),
+              Text('${course.credits} SKS'),
+              const SizedBox(height: 8),
               const Align(
                 alignment: Alignment.centerRight,
                 child: Icon(Icons.arrow_forward),
@@ -477,11 +517,18 @@ class _CourseCardState extends State<CourseCard> {
   }
 }
 
-// Halaman detail course
+// Halaman detail menerima state dan callback dari parent.
 class CourseDetailPage extends StatelessWidget {
   final Course course;
+  final bool isFavorite;
+  final VoidCallback onToggleFavorite;
 
-  const CourseDetailPage({super.key, required this.course});
+  const CourseDetailPage({
+    super.key,
+    required this.course,
+    required this.isFavorite,
+    required this.onToggleFavorite,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -511,6 +558,20 @@ class CourseDetailPage extends StatelessWidget {
                   Text('Jumlah SKS: ${course.credits}'),
                   const SizedBox(height: 12),
                   Text(course.description),
+                  const SizedBox(height: 16),
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: OutlinedButton.icon(
+                      onPressed: onToggleFavorite,
+                      icon: Icon(
+                        isFavorite ? Icons.favorite : Icons.favorite_border,
+                        color: isFavorite ? Colors.red : null,
+                      ),
+                      label: Text(
+                        isFavorite ? 'Hapus dari Favorit' : 'Tambah ke Favorit',
+                      ),
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -524,7 +585,7 @@ class CourseDetailPage extends StatelessWidget {
   }
 }
 
-// Halaman profil dan penjelasan state
+// Halaman profil
 class ProfilePage extends StatelessWidget {
   const ProfilePage({super.key});
 
