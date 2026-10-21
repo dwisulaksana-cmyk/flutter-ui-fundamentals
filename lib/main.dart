@@ -1,7 +1,11 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 import 'course_state.dart';
+import 'models/course.dart';
 
 void main() {
   runApp(
@@ -29,66 +33,15 @@ class CourseExplorerApp extends StatelessWidget {
   }
 }
 
-class Course {
-  final String code;
-  final String name;
-  final String lecturer;
-  final String description;
-  final IconData icon;
+Future<List<Course>> loadCourses() async {
+  final jsonString = await rootBundle.loadString('assets/data/courses.json');
 
-  const Course({
-    required this.code,
-    required this.name,
-    required this.lecturer,
-    required this.description,
-    required this.icon,
-  });
+  final List<dynamic> jsonList = jsonDecode(jsonString) as List<dynamic>;
+
+  return jsonList.map((item) {
+    return Course.fromJson(item as Map<String, dynamic>);
+  }).toList();
 }
-
-const List<Course> courses = [
-  Course(
-    code: 'PTI101',
-    name: 'Pemrograman Dasar',
-    lecturer: 'I Made Agus Wirawan',
-    description: 'Mempelajari dasar pemrograman dan logika algoritma.',
-    icon: Icons.code,
-  ),
-  Course(
-    code: 'PTI102',
-    name: 'Pengembangan Web',
-    lecturer: 'Ni Luh Putu Ariestia',
-    description: 'Mempelajari HTML, CSS, JavaScript, dan konsep web.',
-    icon: Icons.web,
-  ),
-  Course(
-    code: 'PTI103',
-    name: 'Basis Data',
-    lecturer: 'I Gede Mahendra',
-    description: 'Mempelajari pengelolaan data dan query basis data.',
-    icon: Icons.storage,
-  ),
-  Course(
-    code: 'PTI104',
-    name: 'Pemrograman Mobile',
-    lecturer: 'I Putu Suryawan',
-    description: 'Mempelajari pengembangan aplikasi mobile dengan Flutter.',
-    icon: Icons.phone_android,
-  ),
-  Course(
-    code: 'PTI105',
-    name: 'Desain Antarmuka',
-    lecturer: 'Ni Made Pradnyani',
-    description: 'Mempelajari desain UI dan pengalaman pengguna.',
-    icon: Icons.design_services,
-  ),
-  Course(
-    code: 'PTI106',
-    name: 'Jaringan Komputer',
-    lecturer: 'I Wayan Aditya',
-    description: 'Mempelajari konsep jaringan komputer.',
-    icon: Icons.lan,
-  ),
-];
 
 class ResponsiveShell extends StatefulWidget {
   const ResponsiveShell({super.key});
@@ -103,7 +56,11 @@ class _ResponsiveShellState extends State<ResponsiveShell> {
   @override
   Widget build(BuildContext context) {
     final pages = [
-      HomePage(onExplore: () => setState(() => selectedIndex = 1)),
+      HomePage(
+        onExplore: () {
+          setState(() => selectedIndex = 1);
+        },
+      ),
       const CoursesPage(),
       const ProfilePage(),
     ];
@@ -184,7 +141,6 @@ class HomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // watch: halaman ini mendengarkan perubahan CourseState.
     final provider = context.watch<CourseState>();
 
     return Center(
@@ -231,31 +187,75 @@ class HomePage extends StatelessWidget {
   }
 }
 
-class CoursesPage extends StatelessWidget {
+class CoursesPage extends StatefulWidget {
   const CoursesPage({super.key});
 
   @override
+  State<CoursesPage> createState() => _CoursesPageState();
+}
+
+class _CoursesPageState extends State<CoursesPage> {
+  late Future<List<Course>> coursesFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    coursesFuture = loadCourses();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    // watch: daftar course mengikuti perubahan status favorit.
     final provider = context.watch<CourseState>();
 
-    return ListView(
-      padding: const EdgeInsets.all(16),
-      children: [
-        Text('Daftar Course', style: Theme.of(context).textTheme.headlineSmall),
-        const SizedBox(height: 12),
-        ...courses.map(
-          (course) => CourseCard(
-            course: course,
-            isFavorite: provider.isFavorite(course.code),
+    return FutureBuilder<List<Course>>(
+      future: coursesFuture,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
 
-            // read: mengambil state untuk menjalankan aksi.
-            onFavoriteChanged: () {
-              context.read<CourseState>().toggleFavorite(course.code);
-            },
-          ),
-        ),
-      ],
+        if (snapshot.hasError) {
+          return Center(
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Text(
+                'Gagal memuat data course.\n${snapshot.error}',
+                textAlign: TextAlign.center,
+              ),
+            ),
+          );
+        }
+
+        final courses = snapshot.data ?? <Course>[];
+
+        if (courses.isEmpty) {
+          return const Center(child: Text('Belum ada data course.'));
+        }
+
+        return ListView(
+          padding: const EdgeInsets.all(16),
+          children: [
+            Text(
+              'Daftar Course',
+              style: Theme.of(context).textTheme.headlineSmall,
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              'Data dimuat dari JSON dan diubah menjadi objek Course.',
+            ),
+            const SizedBox(height: 12),
+            ...courses.map(
+              (course) => CourseCard(
+                course: course,
+                isFavorite: provider.isFavorite(course.code),
+                onFavoriteChanged: () {
+                  context.read<CourseState>().toggleFavorite(course.code);
+                },
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 }
@@ -278,14 +278,14 @@ class CourseCard extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 12),
       child: ListTile(
         contentPadding: const EdgeInsets.all(16),
-        leading: CircleAvatar(child: Icon(course.icon)),
-        title: Text(course.name),
+        leading: CircleAvatar(child: Text(course.code.replaceAll('PTI', ''))),
+        title: Text(course.title),
         subtitle: Padding(
           padding: const EdgeInsets.only(top: 6),
           child: Text(
-            '${course.code}\n'
-            'Dosen: ${course.lecturer}\n'
-            '${course.description}',
+            'Kode: ${course.code}\n'
+            'SKS: ${course.credits}\n'
+            'Status: ${course.status}',
           ),
         ),
         isThreeLine: true,
@@ -327,9 +327,6 @@ class ProfilePage extends StatelessWidget {
           style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 8),
-
-        // Consumer: hanya bagian ringkasan ini yang perlu
-        // dibangun ulang ketika CourseState berubah.
         Consumer<CourseState>(
           builder: (context, provider, child) {
             return Card(

@@ -1,0 +1,39 @@
+
+[
+  {
+    "code": "PTI101",
+    "title": "Pemrograman Dasar",
+    "credits": 3,
+    "status": "Aktif"
+  },
+  {
+    "code": "PTI102",
+    "title": "Pengembangan Web",
+    "credits": 3,
+    "status": "Aktif"
+  },
+  {
+    "code": "PTI103",
+    "title": "Basis Data",
+    "credits": 3,
+    "status": "Aktif"
+  },
+  {
+    "code": "PTI104",
+    "title": "Pemrograman Mobile",
+    "credits": 3,
+    "status": "Aktif"
+  },
+  {
+    "code": "PTI105",
+    "title": "Desain Antarmuka",
+    "credits": 2,
+    "status": "Aktif"
+  },
+  {
+    "code": "PTI106",
+    "title": "Jaringan Komputer",
+    "credits": 3,
+    "status": "Aktif"
+  }
+]
