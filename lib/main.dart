@@ -3,12 +3,11 @@ import 'package:provider/provider.dart';
 
 import 'course_state.dart';
 import 'models/course.dart';
-import 'services/course_service.dart';
 
 void main() {
   runApp(
     ChangeNotifierProvider(
-      create: (_) => CourseState(),
+      create: (_) => CourseState()..loadCourses(),
       child: const CourseExplorerApp(),
     ),
   );
@@ -44,11 +43,7 @@ class _ResponsiveShellState extends State<ResponsiveShell> {
   @override
   Widget build(BuildContext context) {
     final pages = [
-      HomePage(
-        onExplore: () {
-          setState(() => selectedIndex = 1);
-        },
-      ),
+      HomePage(onExplore: () => setState(() => selectedIndex = 1)),
       const CoursesPage(),
       const ProfilePage(),
     ];
@@ -129,7 +124,7 @@ class HomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final provider = context.watch<CourseState>();
+    final state = context.watch<CourseState>();
 
     return Center(
       child: SingleChildScrollView(
@@ -157,9 +152,17 @@ class HomePage extends StatelessWidget {
                 leading: const Icon(Icons.favorite, color: Colors.red),
                 title: const Text('Total Course Favorit'),
                 trailing: Text(
-                  '${provider.favoriteCount}',
+                  '${state.favoriteCount}',
                   style: Theme.of(context).textTheme.titleLarge,
                 ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            Card(
+              child: ListTile(
+                leading: const Icon(Icons.menu_book),
+                title: const Text('Total Course'),
+                trailing: Text('${state.courses.length}'),
               ),
             ),
             const SizedBox(height: 20),
@@ -175,73 +178,65 @@ class HomePage extends StatelessWidget {
   }
 }
 
-class CoursesPage extends StatefulWidget {
+class CoursesPage extends StatelessWidget {
   const CoursesPage({super.key});
 
   @override
-  State<CoursesPage> createState() => _CoursesPageState();
-}
-
-class _CoursesPageState extends State<CoursesPage> {
-  late Future<List<Course>> coursesFuture;
-
-  @override
-  void initState() {
-    super.initState();
-    coursesFuture = CourseService().loadCourses();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final provider = context.watch<CourseState>();
+    // Provider mendapatkan data melalui CourseRepository.
+    final state = context.watch<CourseState>();
 
-    return FutureBuilder<List<Course>>(
-      future: coursesFuture,
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
-        }
+    if (state.isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
 
-        if (snapshot.hasError) {
-          return Center(
-            child: Padding(
-              padding: const EdgeInsets.all(24),
-              child: Text(
-                'Gagal memuat data course.\n${snapshot.error}',
+    if (state.errorMessage != null) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.error_outline, size: 48),
+              const SizedBox(height: 12),
+              Text(
+                'Gagal memuat course:\n${state.errorMessage}',
                 textAlign: TextAlign.center,
               ),
-            ),
-          );
-        }
-
-        final courses = snapshot.data ?? <Course>[];
-
-        if (courses.isEmpty) {
-          return const Center(child: Text('Belum ada data course.'));
-        }
-
-        return ListView(
-          padding: const EdgeInsets.all(16),
-          children: [
-            Text(
-              'Daftar Course',
-              style: Theme.of(context).textTheme.headlineSmall,
-            ),
-            const SizedBox(height: 8),
-            const Text('Data dimuat melalui CourseService.'),
-            const SizedBox(height: 12),
-            ...courses.map(
-              (course) => CourseCard(
-                course: course,
-                isFavorite: provider.isFavorite(course.code),
-                onFavoriteChanged: () {
-                  context.read<CourseState>().toggleFavorite(course.code);
+              const SizedBox(height: 12),
+              FilledButton(
+                onPressed: () {
+                  context.read<CourseState>().loadCourses();
                 },
+                child: const Text('Coba Lagi'),
               ),
-            ),
-          ],
-        );
-      },
+            ],
+          ),
+        ),
+      );
+    }
+
+    if (state.courses.isEmpty) {
+      return const Center(child: Text('Belum ada data course.'));
+    }
+
+    return ListView(
+      padding: const EdgeInsets.all(16),
+      children: [
+        Text('Daftar Course', style: Theme.of(context).textTheme.headlineSmall),
+        const SizedBox(height: 8),
+        const Text('Data dimuat melalui CourseRepository.'),
+        const SizedBox(height: 12),
+        ...state.courses.map(
+          (course) => CourseCard(
+            course: course,
+            isFavorite: state.isFavorite(course.code),
+            onFavoriteChanged: () {
+              context.read<CourseState>().toggleFavorite(course.code);
+            },
+          ),
+        ),
+      ],
     );
   }
 }
@@ -314,15 +309,12 @@ class ProfilePage extends StatelessWidget {
         ),
         const SizedBox(height: 8),
         Consumer<CourseState>(
-          builder: (context, provider, child) {
+          builder: (context, state, child) {
             return Card(
               child: ListTile(
                 leading: const Icon(Icons.favorite, color: Colors.red),
                 title: const Text('Total Course Favorit'),
-                trailing: Text(
-                  '${provider.favoriteCount}',
-                  style: Theme.of(context).textTheme.titleLarge,
-                ),
+                trailing: Text('${state.favoriteCount}'),
               ),
             );
           },
