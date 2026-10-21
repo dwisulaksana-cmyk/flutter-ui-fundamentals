@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'providers/course_provider.dart';
 import 'repositories/course_repository.dart';
 import 'screens/courses_page.dart';
+import 'screens/favorites_page.dart';
 import 'screens/home_page.dart';
 import 'screens/profile_page.dart';
 import 'services/course_service.dart';
@@ -50,6 +51,7 @@ class _ResponsiveShellState extends State<ResponsiveShell> {
     final pages = [
       HomePage(onExplore: () => setState(() => selectedIndex = 1)),
       const CoursesPage(),
+      const FavoritesPage(),
       const ProfilePage(),
     ];
 
@@ -80,6 +82,11 @@ class _ResponsiveShellState extends State<ResponsiveShell> {
                       label: Text('Courses'),
                     ),
                     NavigationRailDestination(
+                      icon: Icon(Icons.favorite_border),
+                      selectedIcon: Icon(Icons.favorite),
+                      label: Text('Favorites'),
+                    ),
+                    NavigationRailDestination(
                       icon: Icon(Icons.person_outline),
                       selectedIcon: Icon(Icons.person),
                       label: Text('Profile'),
@@ -108,6 +115,11 @@ class _ResponsiveShellState extends State<ResponsiveShell> {
                       icon: Icon(Icons.menu_book_outlined),
                       selectedIcon: Icon(Icons.menu_book),
                       label: 'Courses',
+                    ),
+                    NavigationDestination(
+                      icon: Icon(Icons.favorite_border),
+                      selectedIcon: Icon(Icons.favorite),
+                      label: 'Favorites',
                     ),
                     NavigationDestination(
                       icon: Icon(Icons.person_outline),

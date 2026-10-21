@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../providers/course_provider.dart';
 import '../widgets/course_card.dart';
+import 'detail_page.dart';
 
 class CoursesPage extends StatelessWidget {
   const CoursesPage({super.key});
@@ -61,6 +62,12 @@ class CoursesPage extends StatelessWidget {
             isFavorite: provider.isFavorite(course.code),
             onFavoriteChanged: () {
               context.read<CourseProvider>().toggleFavorite(course.code);
+            },
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => DetailPage(course: course)),
+              );
             },
           ),
         ),

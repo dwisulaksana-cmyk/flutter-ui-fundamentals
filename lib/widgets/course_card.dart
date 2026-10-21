@@ -6,12 +6,14 @@ class CourseCard extends StatelessWidget {
   final Course course;
   final bool isFavorite;
   final VoidCallback onFavoriteChanged;
+  final VoidCallback? onTap;
 
   const CourseCard({
     super.key,
     required this.course,
     required this.isFavorite,
     required this.onFavoriteChanged,
+    this.onTap,
   });
 
   @override
@@ -19,6 +21,7 @@ class CourseCard extends StatelessWidget {
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       child: ListTile(
+        onTap: onTap,
         contentPadding: const EdgeInsets.all(16),
         leading: CircleAvatar(child: Text(course.code.replaceAll('PTI', ''))),
         title: Text(course.title),
