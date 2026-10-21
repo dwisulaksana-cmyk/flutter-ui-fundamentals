@@ -44,7 +44,6 @@ class CourseProvider extends ChangeNotifier {
       favorites.add(code);
     }
 
-    // Sengaja dihapus untuk percobaan debugging Tahap 15.
-    // notifyListeners();
+    notifyListeners();
   }
 }
