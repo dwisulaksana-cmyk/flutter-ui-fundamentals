@@ -18,6 +18,10 @@ class CourseProvider extends ChangeNotifier {
 
   bool isFavorite(String code) => favorites.contains(code);
 
+  List<Course> get favoriteCourses {
+    return courses.where((course) => favorites.contains(course.code)).toList();
+  }
+
   Future<void> loadCourses() async {
     isLoading = true;
     error = null;

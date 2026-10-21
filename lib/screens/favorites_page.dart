@@ -45,9 +45,7 @@ class FavoritesPage extends StatelessWidget {
       );
     }
 
-    final favoriteCourses = provider.courses
-        .where((course) => provider.isFavorite(course.code))
-        .toList();
+    final favoriteCourses = provider.favoriteCourses;
 
     if (favoriteCourses.isEmpty) {
       return Center(
@@ -81,12 +79,12 @@ class FavoritesPage extends StatelessWidget {
           style: Theme.of(context).textTheme.headlineSmall,
         ),
         const SizedBox(height: 8),
-        Text('Total favorit: ${favoriteCourses.length}'),
+        Text('Total favorit: ${provider.favoriteCount}'),
         const SizedBox(height: 12),
         ...favoriteCourses.map(
           (course) => CourseCard(
             course: course,
-            isFavorite: true,
+            isFavorite: provider.isFavorite(course.code),
             onFavoriteChanged: () {
               context.read<CourseProvider>().toggleFavorite(course.code);
             },
