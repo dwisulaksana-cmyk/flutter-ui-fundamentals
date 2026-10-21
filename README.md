@@ -47,3 +47,13 @@ Audit arsitektur dilakukan untuk memastikan bahwa:
 - Service tidak berisi komponen UI.
 - Provider tidak menyimpan `BuildContext` sebagai state.
 - Tanggung jawab setiap folder dijelaskan dalam dokumentasi.
+
+## Finalisasi Proyek
+
+Proyek telah melalui pemeriksaan akhir Git dan arsitektur aplikasi.
+
+- Branch utama: `main`
+- State management: Provider
+- Alur arsitektur: Screen/Widget -> Provider -> Repository -> Service/Data Source
+- Status repository diperiksa menggunakan `git status`.
+- Riwayat perubahan dapat ditinjau menggunakan `git log`.
