@@ -1,9 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import 'course_state.dart';
 
 void main() {
-  runApp(const CourseExplorerApp());
+  runApp(
+    ChangeNotifierProvider(
+      create: (_) => CourseState(),
+      child: const CourseExplorerApp(),
+    ),
+  );
 }
 
 class CourseExplorerApp extends StatelessWidget {
@@ -22,6 +28,8 @@ class CourseExplorerApp extends StatelessWidget {
     );
   }
 }
+
+// MODEL COURSE
 
 class Course {
   final String code;
@@ -84,6 +92,8 @@ const List<Course> courses = [
   ),
 ];
 
+// RESPONSIVE SHELL
+
 class ResponsiveShell extends StatefulWidget {
   const ResponsiveShell({super.key});
 
@@ -94,32 +104,18 @@ class ResponsiveShell extends StatefulWidget {
 class _ResponsiveShellState extends State<ResponsiveShell> {
   int selectedIndex = 0;
 
-  // Satu object state untuk seluruh halaman.
-  late final CourseState courseState;
-
-  @override
-  void initState() {
-    super.initState();
-    courseState = CourseState();
-  }
-
-  @override
-  void dispose() {
-    courseState.dispose();
-    super.dispose();
-  }
-
   @override
   Widget build(BuildContext context) {
     final pages = [
       HomePage(
-        courseState: courseState,
         onExplore: () {
-          setState(() => selectedIndex = 1);
+          setState(() {
+            selectedIndex = 1;
+          });
         },
       ),
-      CoursesPage(courseState: courseState),
-      ProfilePage(courseState: courseState),
+      const CoursesPage(),
+      const ProfilePage(),
     ];
 
     return LayoutBuilder(
@@ -134,7 +130,9 @@ class _ResponsiveShellState extends State<ResponsiveShell> {
                 NavigationRail(
                   selectedIndex: selectedIndex,
                   onDestinationSelected: (index) {
-                    setState(() => selectedIndex = index);
+                    setState(() {
+                      selectedIndex = index;
+                    });
                   },
                   labelType: NavigationRailLabelType.all,
                   destinations: const [
@@ -165,7 +163,9 @@ class _ResponsiveShellState extends State<ResponsiveShell> {
               : NavigationBar(
                   selectedIndex: selectedIndex,
                   onDestinationSelected: (index) {
-                    setState(() => selectedIndex = index);
+                    setState(() {
+                      selectedIndex = index;
+                    });
                   },
                   destinations: const [
                     NavigationDestination(
@@ -191,18 +191,17 @@ class _ResponsiveShellState extends State<ResponsiveShell> {
   }
 }
 
+// HOME PAGE
+
 class HomePage extends StatelessWidget {
-  final CourseState courseState;
   final VoidCallback onExplore;
 
-  const HomePage({
-    super.key,
-    required this.courseState,
-    required this.onExplore,
-  });
+  const HomePage({super.key, required this.onExplore});
 
   @override
   Widget build(BuildContext context) {
+    final courseState = context.watch<CourseState>();
+
     return Center(
       child: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
@@ -224,20 +223,15 @@ class HomePage extends StatelessWidget {
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 20),
-            AnimatedBuilder(
-              animation: courseState,
-              builder: (context, child) {
-                return Card(
-                  child: ListTile(
-                    leading: const Icon(Icons.favorite, color: Colors.red),
-                    title: const Text('Total Course Favorit'),
-                    trailing: Text(
-                      '${courseState.favoriteCount}',
-                      style: Theme.of(context).textTheme.titleLarge,
-                    ),
-                  ),
-                );
-              },
+            Card(
+              child: ListTile(
+                leading: const Icon(Icons.favorite, color: Colors.red),
+                title: const Text('Total Course Favorit'),
+                trailing: Text(
+                  '${courseState.favoriteCount}',
+                  style: Theme.of(context).textTheme.titleLarge,
+                ),
+              ),
             ),
             const SizedBox(height: 20),
             FilledButton.icon(
@@ -252,39 +246,35 @@ class HomePage extends StatelessWidget {
   }
 }
 
-class CoursesPage extends StatelessWidget {
-  final CourseState courseState;
+// COURSES PAGE
 
-  const CoursesPage({super.key, required this.courseState});
+class CoursesPage extends StatelessWidget {
+  const CoursesPage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: courseState,
-      builder: (context, child) {
-        return ListView(
-          padding: const EdgeInsets.all(16),
-          children: [
-            Text(
-              'Daftar Course',
-              style: Theme.of(context).textTheme.headlineSmall,
-            ),
-            const SizedBox(height: 12),
-            ...courses.map(
-              (course) => CourseCard(
-                course: course,
-                isFavorite: courseState.isFavorite(course.code),
-                onFavoriteChanged: () {
-                  courseState.toggleFavorite(course.code);
-                },
-              ),
-            ),
-          ],
-        );
-      },
+    final courseState = context.watch<CourseState>();
+
+    return ListView(
+      padding: const EdgeInsets.all(16),
+      children: [
+        Text('Daftar Course', style: Theme.of(context).textTheme.headlineSmall),
+        const SizedBox(height: 12),
+        ...courses.map(
+          (course) => CourseCard(
+            course: course,
+            isFavorite: courseState.isFavorite(course.code),
+            onFavoriteChanged: () {
+              context.read<CourseState>().toggleFavorite(course.code);
+            },
+          ),
+        ),
+      ],
     );
   }
 }
+
+// COURSE CARD
 
 class CourseCard extends StatelessWidget {
   final Course course;
@@ -328,13 +318,15 @@ class CourseCard extends StatelessWidget {
   }
 }
 
-class ProfilePage extends StatelessWidget {
-  final CourseState courseState;
+// PROFILE PAGE
 
-  const ProfilePage({super.key, required this.courseState});
+class ProfilePage extends StatelessWidget {
+  const ProfilePage({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final courseState = context.watch<CourseState>();
+
     return ListView(
       padding: const EdgeInsets.all(24),
       children: [
@@ -350,18 +342,13 @@ class ProfilePage extends StatelessWidget {
         const SizedBox(height: 8),
         const Text('NIM: 2415051047', textAlign: TextAlign.center),
         const Divider(height: 32),
-        AnimatedBuilder(
-          animation: courseState,
-          builder: (context, child) {
-            return ListTile(
-              leading: const Icon(Icons.favorite, color: Colors.red),
-              title: const Text('Total Course Favorit'),
-              trailing: Text(
-                '${courseState.favoriteCount}',
-                style: Theme.of(context).textTheme.titleLarge,
-              ),
-            );
-          },
+        ListTile(
+          leading: const Icon(Icons.favorite, color: Colors.red),
+          title: const Text('Total Course Favorit'),
+          trailing: Text(
+            '${courseState.favoriteCount}',
+            style: Theme.of(context).textTheme.titleLarge,
+          ),
         ),
       ],
     );
