@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import 'course_state.dart';
+import 'course_provider.dart';
 import 'models/course.dart';
+import 'repositories/course_repository.dart';
+import 'services/course_service.dart';
 
 void main() {
   runApp(
     ChangeNotifierProvider(
-      create: (_) => CourseState()..loadCourses(),
+      create: (_) =>
+          CourseProvider(CourseRepository(CourseService()))..loadCourses(),
       child: const CourseExplorerApp(),
     ),
   );
@@ -124,7 +127,7 @@ class HomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final state = context.watch<CourseState>();
+    final provider = context.watch<CourseProvider>();
 
     return Center(
       child: SingleChildScrollView(
@@ -151,10 +154,7 @@ class HomePage extends StatelessWidget {
               child: ListTile(
                 leading: const Icon(Icons.favorite, color: Colors.red),
                 title: const Text('Total Course Favorit'),
-                trailing: Text(
-                  '${state.favoriteCount}',
-                  style: Theme.of(context).textTheme.titleLarge,
-                ),
+                trailing: Text('${provider.favoriteCount}'),
               ),
             ),
             const SizedBox(height: 12),
@@ -162,7 +162,7 @@ class HomePage extends StatelessWidget {
               child: ListTile(
                 leading: const Icon(Icons.menu_book),
                 title: const Text('Total Course'),
-                trailing: Text('${state.courses.length}'),
+                trailing: Text('${provider.courses.length}'),
               ),
             ),
             const SizedBox(height: 20),
@@ -183,32 +183,34 @@ class CoursesPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Provider mendapatkan data melalui CourseRepository.
-    final state = context.watch<CourseState>();
+    final provider = context.watch<CourseProvider>();
 
-    if (state.isLoading) {
+    if (provider.isLoading) {
       return const Center(child: CircularProgressIndicator());
     }
 
-    if (state.errorMessage != null) {
+    if (provider.error != null) {
       return Center(
         child: Padding(
           padding: const EdgeInsets.all(24),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.error_outline, size: 48),
+              const Icon(Icons.error_outline, size: 48, color: Colors.red),
               const SizedBox(height: 12),
-              Text(
-                'Gagal memuat course:\n${state.errorMessage}',
+              const Text(
+                'Terjadi kesalahan saat memuat course.',
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 12),
-              FilledButton(
+              const SizedBox(height: 8),
+              Text(provider.error!, textAlign: TextAlign.center),
+              const SizedBox(height: 16),
+              FilledButton.icon(
                 onPressed: () {
-                  context.read<CourseState>().loadCourses();
+                  context.read<CourseProvider>().loadCourses();
                 },
-                child: const Text('Coba Lagi'),
+                icon: const Icon(Icons.refresh),
+                label: const Text('Coba Lagi'),
               ),
             ],
           ),
@@ -216,7 +218,7 @@ class CoursesPage extends StatelessWidget {
       );
     }
 
-    if (state.courses.isEmpty) {
+    if (provider.courses.isEmpty) {
       return const Center(child: Text('Belum ada data course.'));
     }
 
@@ -225,14 +227,14 @@ class CoursesPage extends StatelessWidget {
       children: [
         Text('Daftar Course', style: Theme.of(context).textTheme.headlineSmall),
         const SizedBox(height: 8),
-        const Text('Data dimuat melalui CourseRepository.'),
+        const Text('Data dikelola oleh CourseProvider.'),
         const SizedBox(height: 12),
-        ...state.courses.map(
+        ...provider.courses.map(
           (course) => CourseCard(
             course: course,
-            isFavorite: state.isFavorite(course.code),
+            isFavorite: provider.isFavorite(course.code),
             onFavoriteChanged: () {
-              context.read<CourseState>().toggleFavorite(course.code);
+              context.read<CourseProvider>().toggleFavorite(course.code);
             },
           ),
         ),
@@ -288,6 +290,8 @@ class ProfilePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final provider = context.watch<CourseProvider>();
+
     return ListView(
       padding: const EdgeInsets.all(24),
       children: [
@@ -303,12 +307,7 @@ class ProfilePage extends StatelessWidget {
         const SizedBox(height: 8),
         const Text('NIM: 2415051047', textAlign: TextAlign.center),
         const Divider(height: 32),
-        const Text(
-          'Ringkasan Favorit',
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-        ),
-        const SizedBox(height: 8),
-        Consumer<CourseState>(
+        Consumer<CourseProvider>(
           builder: (context, state, child) {
             return Card(
               child: ListTile(
