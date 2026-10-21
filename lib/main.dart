@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
+
+import 'course_state.dart';
 
 void main() {
   runApp(const CourseExplorerApp());
@@ -21,8 +22,6 @@ class CourseExplorerApp extends StatelessWidget {
     );
   }
 }
-
-// MODEL COURSE
 
 class Course {
   final String code;
@@ -80,12 +79,10 @@ const List<Course> courses = [
     code: 'PTI106',
     name: 'Jaringan Komputer',
     lecturer: 'I Wayan Aditya',
-    description: 'Mempelajari konsep jaringan dan komunikasi komputer.',
+    description: 'Mempelajari konsep jaringan komputer.',
     icon: Icons.lan,
   ),
 ];
-
-// RESPONSIVE SHELL
 
 class ResponsiveShell extends StatefulWidget {
   const ResponsiveShell({super.key});
@@ -97,28 +94,18 @@ class ResponsiveShell extends StatefulWidget {
 class _ResponsiveShellState extends State<ResponsiveShell> {
   int selectedIndex = 0;
 
-  // Single source of truth untuk daftar course favorit.
-  final Set<String> favoriteCourseCodes = <String>{};
+  // Satu object state untuk seluruh halaman.
+  late final CourseState courseState;
 
-  // ValueNotifier untuk memantau jumlah favorit.
-  final ValueNotifier<int> favoriteCountNotifier = ValueNotifier<int>(0);
-
-  void toggleFavorite(Course course) {
-    setState(() {
-      if (favoriteCourseCodes.contains(course.code)) {
-        favoriteCourseCodes.remove(course.code);
-      } else {
-        favoriteCourseCodes.add(course.code);
-      }
-    });
-
-    // Memperbarui nilai notifier setelah state berubah.
-    favoriteCountNotifier.value = favoriteCourseCodes.length;
+  @override
+  void initState() {
+    super.initState();
+    courseState = CourseState();
   }
 
   @override
   void dispose() {
-    favoriteCountNotifier.dispose();
+    courseState.dispose();
     super.dispose();
   }
 
@@ -126,23 +113,18 @@ class _ResponsiveShellState extends State<ResponsiveShell> {
   Widget build(BuildContext context) {
     final pages = [
       HomePage(
-        favoriteCountNotifier: favoriteCountNotifier,
+        courseState: courseState,
         onExplore: () {
-          setState(() {
-            selectedIndex = 1;
-          });
+          setState(() => selectedIndex = 1);
         },
       ),
-      CoursesPage(
-        favoriteCourseCodes: favoriteCourseCodes,
-        onToggleFavorite: toggleFavorite,
-      ),
-      ProfilePage(favoriteCountNotifier: favoriteCountNotifier),
+      CoursesPage(courseState: courseState),
+      ProfilePage(courseState: courseState),
     ];
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        final bool isWide = constraints.maxWidth >= 840;
+        final isWide = constraints.maxWidth >= 840;
 
         return Scaffold(
           appBar: AppBar(title: const Text('Course Explorer')),
@@ -152,9 +134,7 @@ class _ResponsiveShellState extends State<ResponsiveShell> {
                 NavigationRail(
                   selectedIndex: selectedIndex,
                   onDestinationSelected: (index) {
-                    setState(() {
-                      selectedIndex = index;
-                    });
+                    setState(() => selectedIndex = index);
                   },
                   labelType: NavigationRailLabelType.all,
                   destinations: const [
@@ -185,9 +165,7 @@ class _ResponsiveShellState extends State<ResponsiveShell> {
               : NavigationBar(
                   selectedIndex: selectedIndex,
                   onDestinationSelected: (index) {
-                    setState(() {
-                      selectedIndex = index;
-                    });
+                    setState(() => selectedIndex = index);
                   },
                   destinations: const [
                     NavigationDestination(
@@ -213,15 +191,13 @@ class _ResponsiveShellState extends State<ResponsiveShell> {
   }
 }
 
-// HOME PAGE
-
 class HomePage extends StatelessWidget {
-  final ValueListenable<int> favoriteCountNotifier;
+  final CourseState courseState;
   final VoidCallback onExplore;
 
   const HomePage({
     super.key,
-    required this.favoriteCountNotifier,
+    required this.courseState,
     required this.onExplore,
   });
 
@@ -248,31 +224,16 @@ class HomePage extends StatelessWidget {
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 20),
-
-            // ValueListenableBuilder memantau jumlah favorit.
-            ValueListenableBuilder<int>(
-              valueListenable: favoriteCountNotifier,
-              builder: (context, value, child) {
+            AnimatedBuilder(
+              animation: courseState,
+              builder: (context, child) {
                 return Card(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(Icons.favorite, color: Colors.red),
-                        const SizedBox(width: 12),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Text('Total Course Favorit'),
-                            Text(
-                              '$value',
-                              style: Theme.of(context).textTheme.headlineMedium,
-                            ),
-                          ],
-                        ),
-                      ],
+                  child: ListTile(
+                    leading: const Icon(Icons.favorite, color: Colors.red),
+                    title: const Text('Total Course Favorit'),
+                    trailing: Text(
+                      '${courseState.favoriteCount}',
+                      style: Theme.of(context).textTheme.titleLarge,
                     ),
                   ),
                 );
@@ -291,40 +252,39 @@ class HomePage extends StatelessWidget {
   }
 }
 
-// COURSES PAGE
-
 class CoursesPage extends StatelessWidget {
-  final Set<String> favoriteCourseCodes;
-  final ValueChanged<Course> onToggleFavorite;
+  final CourseState courseState;
 
-  const CoursesPage({
-    super.key,
-    required this.favoriteCourseCodes,
-    required this.onToggleFavorite,
-  });
+  const CoursesPage({super.key, required this.courseState});
 
   @override
   Widget build(BuildContext context) {
-    return ListView(
-      padding: const EdgeInsets.all(16),
-      children: [
-        Text('Daftar Course', style: Theme.of(context).textTheme.headlineSmall),
-        const SizedBox(height: 12),
-        ...courses.map(
-          (course) => CourseCard(
-            course: course,
-            isFavorite: favoriteCourseCodes.contains(course.code),
-            onFavoriteChanged: () {
-              onToggleFavorite(course);
-            },
-          ),
-        ),
-      ],
+    return AnimatedBuilder(
+      animation: courseState,
+      builder: (context, child) {
+        return ListView(
+          padding: const EdgeInsets.all(16),
+          children: [
+            Text(
+              'Daftar Course',
+              style: Theme.of(context).textTheme.headlineSmall,
+            ),
+            const SizedBox(height: 12),
+            ...courses.map(
+              (course) => CourseCard(
+                course: course,
+                isFavorite: courseState.isFavorite(course.code),
+                onFavoriteChanged: () {
+                  courseState.toggleFavorite(course.code);
+                },
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 }
-
-// COURSE CARD
 
 class CourseCard extends StatelessWidget {
   final Course course;
@@ -368,12 +328,10 @@ class CourseCard extends StatelessWidget {
   }
 }
 
-// PROFILE PAGE
-
 class ProfilePage extends StatelessWidget {
-  final ValueListenable<int> favoriteCountNotifier;
+  final CourseState courseState;
 
-  const ProfilePage({super.key, required this.favoriteCountNotifier});
+  const ProfilePage({super.key, required this.courseState});
 
   @override
   Widget build(BuildContext context) {
@@ -392,14 +350,14 @@ class ProfilePage extends StatelessWidget {
         const SizedBox(height: 8),
         const Text('NIM: 2415051047', textAlign: TextAlign.center),
         const Divider(height: 32),
-        ValueListenableBuilder<int>(
-          valueListenable: favoriteCountNotifier,
-          builder: (context, value, child) {
+        AnimatedBuilder(
+          animation: courseState,
+          builder: (context, child) {
             return ListTile(
               leading: const Icon(Icons.favorite, color: Colors.red),
               title: const Text('Total Course Favorit'),
               trailing: Text(
-                '$value',
+                '${courseState.favoriteCount}',
                 style: Theme.of(context).textTheme.titleLarge,
               ),
             );
