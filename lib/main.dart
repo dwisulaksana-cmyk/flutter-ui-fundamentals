@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 
 void main() {
   runApp(const CourseExplorerApp());
@@ -20,6 +21,8 @@ class CourseExplorerApp extends StatelessWidget {
     );
   }
 }
+
+// MODEL COURSE
 
 class Course {
   final String code;
@@ -82,6 +85,8 @@ const List<Course> courses = [
   ),
 ];
 
+// RESPONSIVE SHELL
+
 class ResponsiveShell extends StatefulWidget {
   const ResponsiveShell({super.key});
 
@@ -92,8 +97,11 @@ class ResponsiveShell extends StatefulWidget {
 class _ResponsiveShellState extends State<ResponsiveShell> {
   int selectedIndex = 0;
 
-  // Single source of truth: status favorit hanya disimpan di parent.
+  // Single source of truth untuk daftar course favorit.
   final Set<String> favoriteCourseCodes = <String>{};
+
+  // ValueNotifier untuk memantau jumlah favorit.
+  final ValueNotifier<int> favoriteCountNotifier = ValueNotifier<int>(0);
 
   void toggleFavorite(Course course) {
     setState(() {
@@ -103,25 +111,38 @@ class _ResponsiveShellState extends State<ResponsiveShell> {
         favoriteCourseCodes.add(course.code);
       }
     });
+
+    // Memperbarui nilai notifier setelah state berubah.
+    favoriteCountNotifier.value = favoriteCourseCodes.length;
+  }
+
+  @override
+  void dispose() {
+    favoriteCountNotifier.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     final pages = [
       HomePage(
-        favoriteCount: favoriteCourseCodes.length,
-        onExplore: () => setState(() => selectedIndex = 1),
+        favoriteCountNotifier: favoriteCountNotifier,
+        onExplore: () {
+          setState(() {
+            selectedIndex = 1;
+          });
+        },
       ),
       CoursesPage(
         favoriteCourseCodes: favoriteCourseCodes,
         onToggleFavorite: toggleFavorite,
       ),
-      ProfilePage(favoriteCount: favoriteCourseCodes.length),
+      ProfilePage(favoriteCountNotifier: favoriteCountNotifier),
     ];
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        final isWide = constraints.maxWidth >= 840;
+        final bool isWide = constraints.maxWidth >= 840;
 
         return Scaffold(
           appBar: AppBar(title: const Text('Course Explorer')),
@@ -131,7 +152,9 @@ class _ResponsiveShellState extends State<ResponsiveShell> {
                 NavigationRail(
                   selectedIndex: selectedIndex,
                   onDestinationSelected: (index) {
-                    setState(() => selectedIndex = index);
+                    setState(() {
+                      selectedIndex = index;
+                    });
                   },
                   labelType: NavigationRailLabelType.all,
                   destinations: const [
@@ -162,7 +185,9 @@ class _ResponsiveShellState extends State<ResponsiveShell> {
               : NavigationBar(
                   selectedIndex: selectedIndex,
                   onDestinationSelected: (index) {
-                    setState(() => selectedIndex = index);
+                    setState(() {
+                      selectedIndex = index;
+                    });
                   },
                   destinations: const [
                     NavigationDestination(
@@ -188,13 +213,15 @@ class _ResponsiveShellState extends State<ResponsiveShell> {
   }
 }
 
+// HOME PAGE
+
 class HomePage extends StatelessWidget {
-  final int favoriteCount;
+  final ValueListenable<int> favoriteCountNotifier;
   final VoidCallback onExplore;
 
   const HomePage({
     super.key,
-    required this.favoriteCount,
+    required this.favoriteCountNotifier,
     required this.onExplore,
   });
 
@@ -220,8 +247,37 @@ class HomePage extends StatelessWidget {
               'Selamat datang di Course Explorer.',
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 8),
-            Text('Total course favorit: $favoriteCount'),
+            const SizedBox(height: 20),
+
+            // ValueListenableBuilder memantau jumlah favorit.
+            ValueListenableBuilder<int>(
+              valueListenable: favoriteCountNotifier,
+              builder: (context, value, child) {
+                return Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.favorite, color: Colors.red),
+                        const SizedBox(width: 12),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Text('Total Course Favorit'),
+                            Text(
+                              '$value',
+                              style: Theme.of(context).textTheme.headlineMedium,
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
             const SizedBox(height: 20),
             FilledButton.icon(
               onPressed: onExplore,
@@ -234,6 +290,8 @@ class HomePage extends StatelessWidget {
     );
   }
 }
+
+// COURSES PAGE
 
 class CoursesPage extends StatelessWidget {
   final Set<String> favoriteCourseCodes;
@@ -256,13 +314,17 @@ class CoursesPage extends StatelessWidget {
           (course) => CourseCard(
             course: course,
             isFavorite: favoriteCourseCodes.contains(course.code),
-            onFavoriteChanged: () => onToggleFavorite(course),
+            onFavoriteChanged: () {
+              onToggleFavorite(course);
+            },
           ),
         ),
       ],
     );
   }
 }
+
+// COURSE CARD
 
 class CourseCard extends StatelessWidget {
   final Course course;
@@ -286,7 +348,11 @@ class CourseCard extends StatelessWidget {
         title: Text(course.name),
         subtitle: Padding(
           padding: const EdgeInsets.only(top: 6),
-          child: Text('${course.code}\nDosen: ${course.lecturer}'),
+          child: Text(
+            '${course.code}\n'
+            'Dosen: ${course.lecturer}\n'
+            '${course.description}',
+          ),
         ),
         isThreeLine: true,
         trailing: IconButton(
@@ -302,17 +368,21 @@ class CourseCard extends StatelessWidget {
   }
 }
 
-class ProfilePage extends StatelessWidget {
-  final int favoriteCount;
+// PROFILE PAGE
 
-  const ProfilePage({super.key, required this.favoriteCount});
+class ProfilePage extends StatelessWidget {
+  final ValueListenable<int> favoriteCountNotifier;
+
+  const ProfilePage({super.key, required this.favoriteCountNotifier});
 
   @override
   Widget build(BuildContext context) {
     return ListView(
       padding: const EdgeInsets.all(24),
       children: [
-        const CircleAvatar(radius: 42, child: Icon(Icons.person, size: 48)),
+        const Center(
+          child: CircleAvatar(radius: 42, child: Icon(Icons.person, size: 48)),
+        ),
         const SizedBox(height: 16),
         Text(
           'Made Dwi Sulaksana',
@@ -322,10 +392,18 @@ class ProfilePage extends StatelessWidget {
         const SizedBox(height: 8),
         const Text('NIM: 2415051047', textAlign: TextAlign.center),
         const Divider(height: 32),
-        ListTile(
-          leading: const Icon(Icons.favorite, color: Colors.red),
-          title: const Text('Total Course Favorit'),
-          trailing: Text('$favoriteCount'),
+        ValueListenableBuilder<int>(
+          valueListenable: favoriteCountNotifier,
+          builder: (context, value, child) {
+            return ListTile(
+              leading: const Icon(Icons.favorite, color: Colors.red),
+              title: const Text('Total Course Favorit'),
+              trailing: Text(
+                '$value',
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
+            );
+          },
         ),
       ],
     );
